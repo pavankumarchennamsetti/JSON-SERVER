@@ -1,0 +1,16 @@
+{
+  "users": [
+    {
+      "fname": "PAVAN KUMAR",
+      "lname": "CHENNAMSETTI",
+      "age": "21",
+      "id": 1
+    },
+    {
+      "fname": "KIRAN SAI",
+      "lname": "BASAMSETTI",
+      "age": "21",
+      "id": 2
+    }
+  ]
+}
