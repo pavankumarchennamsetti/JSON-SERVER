@@ -1,0 +1,202 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DATABASE SERVER</title>
+    <style>
+      .inp {
+        background-color: beige;
+        margin: 2rem;
+        padding: 2rem;
+      }
+      .tab {
+        background-color: wheat;
+        margin: 2rem;
+        padding: 2rem;
+      }
+      button {
+        background-color: rgb(138, 75, 48);
+        border: 2px rgb(78, 228, 29) solid;
+        border-radius: 7px;
+        color: rgb(62, 187, 60);
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: rgba(211, 207, 112, 0.822);
+        border: 2px rgb(139, 234, 108) solid;
+        border-radius: 5px;
+        color: rgb(247, 5, 247);
+        cursor: pointer;
+      }
+      input {
+        border: 2px solid green;
+      }
+      th,
+      td {
+        text-align: center;
+      }
+      span {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="text-align: center">DATABASE</h1>
+    <div class="inp">
+      <h1>Enter to Server DataBase:</h1>
+      <label for="FirstName">First Name:</label><span>*</span><br />
+      <input type="text" id="FirstName" name="FirstName" /><br /><br />
+      <label for="LastName">Last Name:</label><span>*</span><br />
+      <input type="text" id="LastName" name="LastName" /><br /><br />
+      <label for="age">Age:</label><span>*</span><br />
+      <input type="number" id="age" name="age" /><br /><br />
+      <button type="button" onclick="add()">ADD</button>
+      &nbsp;&nbsp;
+      <button type="button" onclick="get()">GET DATA</button>
+      <br />
+      <br />
+      <h3>WANT TO DELETE any data..?</h3>
+      <input type="number" required placeholder="enter ID to delete" id="id" />
+      <button type="button" onclick="deletedata()">DELETE</button>
+    </div>
+    <br />
+    <div class="tab">
+      <h1>DATA IN SERVER:</h1>
+      <table id="frnds" border="1">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Age</th>
+          </tr>
+        </thead>
+        <tbody id="myTable"></tbody>
+      </table>
+    </div>
+  </body>
+</html>
+
+<script>
+  /////////////////////////*FUNCTION TO ADD THE DATA INTO SERVER*/////////////////////////////////
+  function add() {
+    //READING INPUT VALUES.........
+    var fname = document.getElementById("FirstName").value;
+    var lname = document.getElementById("LastName").value;
+    var age = document.getElementById("age").value;
+
+    //creating temporary json
+
+    tempJSON = {
+      fname: fname,
+      lname: lname,
+      age: age,
+    };
+    if (fname == "" || lname == "" || age == "") {
+      alert("Please enter the following:(");
+    } else {
+      document.getElementById("FirstName").value = "";
+      document.getElementById("LastName").value = "";
+      document.getElementById("age").value = "";
+
+      /*TO PUSH THE DATA INTO SERVER...
+       Convert the JSON format to STRING format..
+       */
+      var Jsonstr = JSON.stringify(tempJSON);
+
+      //************SERVER CONNECTION TASK*********************//
+      //  STEP-1 : Create an object..........
+
+      var xhttp = new XMLHttpRequest();
+
+      //STEP-2 : Whenever we got a response from a server , then it will executed.
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          //IT MEANS A PROPER CONNECTION WITH SERVER
+          //If proper connection appears, then server will respond like this..
+          console.log(this.responseText);
+        }
+      };
+    }
+
+    //STEP-3 : Post this information to server
+    xhttp.open("POST", "http://localhost:3000/users", true);
+
+    //STEP-4 : Set datatype to JSON again!!
+    xhttp.setRequestHeader("content-Type", "application/json", "charset:UTF-8");
+
+    //STEP-5 : Send the data to server...
+    xhttp.send(Jsonstr);
+    get();
+  }
+
+  ////////////////*********GETTING DATA FROM SERVER TASK************///////////////////////
+  function get() {
+    //STEP-1 : Create an object..
+    var xhttp = new XMLHttpRequest();
+    //creating variable for table
+    var table = document.getElementById("myTable");
+    //DELETING OLD ROWS...
+    var rowCount = table.rows.length;
+    for (var i = rowCount - 1; i >= 0; i--) {
+      table.deleteRow(i);
+    }
+    //STEP-2 : Whenever we got a response from a server , then it will executed.
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        //IT MEANS A PROPER CONNECTION WITH SERVER
+        //If proper connection appears, then server will respond like this..
+        console.log(this.responseText);
+        //SHOWING INTO UI............
+        //String into JSON..
+        var jsonData = JSON.parse(this.responseText);
+        jsonData.forEach((temp) => {
+          var row = document.createElement("tr");
+          var tdId = document.createElement("td");
+          var tdfname = document.createElement("td");
+          var tdlname = document.createElement("td");
+          var tdage = document.createElement("td");
+          tdId.innerHTML = temp.id;
+          tdfname.innerHTML = temp.fname;
+          tdlname.innerHTML = temp.lname;
+          tdage.innerHTML = temp.age;
+          row.appendChild(tdId);
+          row.appendChild(tdfname);
+          row.appendChild(tdlname);
+          row.appendChild(tdage);
+          table.appendChild(row);
+        });
+      }
+    };
+
+    //STEP-3 : Post this information to server
+    xhttp.open("GET", "http://localhost:3000/users", true);
+
+    //STEP -4 :  Send the data..
+    xhttp.send();
+  }
+
+  ///////////////////************DELETE DATA IN SERVER TASK************///////////////////////////
+
+  function deletedata() {
+    var id = document.getElementById("id").value;
+    var xhttp = new XMLHttpRequest();
+    //STEP-2 : Whenever we got a response from a server , then it will executed.
+    var table = document.getElementById("myTable");
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        //IT MEANS A PROPER CONNECTION WITH SERVER
+        //If proper connection appears, then server will respond like this..
+        console.log(this.responseText);
+      }
+    };
+
+    //STEP-3 : Post this information to server
+    xhttp.open("DELETE", "http://localhost:3000/users/" + id, true);
+    document.getElementById("id").value = "";
+    get();
+    //STEP -4 :  Send the data..
+    xhttp.send();
+  }
+</script>
